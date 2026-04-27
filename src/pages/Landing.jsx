@@ -62,9 +62,6 @@ export default function Landing() {
             <Link to="/auth" className="inline-flex items-center justify-center px-8 py-3.5 text-lg font-medium text-white bg-primary-500 hover:bg-primary-600 rounded-xl shadow-lg shadow-primary-500/30 transition-all hover:-translate-y-1">
               Get Started Free <ArrowRight className="ml-2 w-5 h-5" />
             </Link>
-            <Link to="/ngo" className="inline-flex items-center justify-center px-8 py-3.5 text-lg font-medium text-slate-700 glass hover:bg-slate-50 border border-slate-200 rounded-xl transition-all hover:-translate-y-1">
-              View Prototype Demo
-            </Link>
           </motion.div>
         </div>
       </section>
