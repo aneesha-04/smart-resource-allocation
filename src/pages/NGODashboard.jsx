@@ -33,18 +33,22 @@ export default function NGODashboard() {
 
   const handleMatch = async (req) => {
     setSelectedReq(req);
-    setAiMatching(true);
-    setMatchedVols([]);
-    
-    // Simulate AI loading
-    const results = await matchVolunteers(req, mockVolunteers);
-    setMatchedVols(results);
-    setAiMatching(false);
+    setIsMatching(true);
+    try {
+      const results = await matchVolunteers(req, mockVolunteers);
+      setMatchedVols(results);
+    } catch (e) {
+      toast.error(e.message);
+      setSelectedReq(null);
+    } finally {
+      setIsMatching(false);
+    }
   };
 
-  const handleAssign = (vol) => {
-    toast.success(`Assigned ${vol.name} to "${selectedReq.title}"`);
-    setRequests(requests.map(r => r.id === selectedReq.id ? { ...r, status: 'Assigned' } : r));
+  const handleConfirmMatch = () => {
+    if (!selectedReq) return;
+    toast.success(`Match Confirmed!`);
+    setRequests(requests.map(r => r.id === selectedReq.id ? { ...r, status: 'Matched' } : r));
     setSelectedReq(null);
   };
 
@@ -60,7 +64,7 @@ export default function NGODashboard() {
       setAiSuggested(true);
       toast.success("AI detected urgency and category!");
     } catch (e) {
-      toast.error("Failed to detect.");
+      toast.error(e.message);
     } finally {
       setIsDetecting(false);
     }
@@ -228,37 +232,47 @@ export default function NGODashboard() {
                 {aiMatching ? (
                   <div className="flex flex-col items-center py-8">
                     <Loader2 className="w-10 h-10 text-primary-500 animate-spin mb-4" />
-                    <p className="text-slate-600 font-medium">Analyzing volunteer skills & locations...</p>
-                    <p className="text-xs text-purple-600 mt-2 font-medium flex items-center">Powered by Gemini ✦</p>
+                    <p className="text-slate-600 font-medium">Gemini is analyzing...</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <div className="flex justify-between items-center mb-1">
                       <p className="text-sm font-semibold text-slate-700">Top 3 Matches</p>
-                      <p className="text-xs text-purple-600 font-medium">Powered by Gemini ✦</p>
                     </div>
                     {matchedVols.map((v, idx) => (
                       <motion.div 
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: idx * 0.1 }}
-                        key={v.id} 
-                        className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center"
+                        key={idx} 
+                        className="flex flex-col p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-primary-200 transition-colors"
                       >
-                        <div>
-                          <p className="font-bold text-slate-800">{v.name} <span className="text-xs ml-2 text-amber-500">★ {v.rating}</span></p>
-                          <p className="text-sm text-green-600 mt-1 flex items-center">
-                            <Sparkles className="w-3 h-3 mr-1" /> {v.reason}
-                          </p>
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 bg-gradient-to-br from-primary-100 to-primary-200 rounded-full flex items-center justify-center text-primary-700 font-bold">
+                              {v.name.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="font-semibold text-slate-800">{v.name}</p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end">
+                            <span className="text-sm font-bold text-green-600">{v.score}% Match</span>
+                          </div>
                         </div>
-                        <button 
-                          onClick={() => handleAssign(v)}
-                          className="px-3 py-1.5 bg-slate-900 text-white text-sm rounded-lg hover:bg-slate-800 transition-colors"
-                        >
-                          Assign
-                        </button>
+                        <p className="text-xs text-slate-600 bg-white p-2 border border-slate-100 rounded-lg italic text-balance shadow-sm">
+                          {v.reason}
+                        </p>
                       </motion.div>
                     ))}
+                    <div className="pt-4 flex flex-col items-center gap-3">
+                      <button 
+                        onClick={handleConfirmMatch}
+                        className="w-full bg-primary-500 hover:bg-primary-600 text-white py-2.5 rounded-lg font-semibold transition-colors shadow-sm"
+                      >
+                        Confirm Match
+                      </button>
+                    </div>
                     {matchedVols.length === 0 && (
                       <p className="text-slate-500 text-center py-4">No available volunteers matched.</p>
                     )}
@@ -307,7 +321,7 @@ export default function NGODashboard() {
                 <div>
                   <button type="button" onClick={handleAutoDetect} disabled={isDetecting} className="text-sm px-4 py-2 bg-purple-50 text-purple-700 hover:bg-purple-100 rounded-lg font-medium transition-colors border border-purple-200 flex items-center w-full justify-center disabled:opacity-50">
                     {isDetecting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Sparkles className="w-4 h-4 mr-2 text-purple-500" />}
-                    {isDetecting ? "Analyzing Request..." : "Auto-Detect Urgency & Category with AI"}
+                    {isDetecting ? "Gemini is analyzing..." : "Analyze with AI"}
                   </button>
                 </div>
                 <div>
@@ -317,19 +331,20 @@ export default function NGODashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center">
-                      Category {aiSuggested && <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded ml-2 font-bold">AI Suggested</span>}
+                      Category {aiSuggested && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded ml-2 font-bold flex items-center">⚡ AI Suggested</span>}
                     </label>
                     <select required className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 outline-none" value={newReq.category} onChange={e => {setNewReq({...newReq, category: e.target.value}); setAiSuggested(false);}}>
                       <option value="">Select...</option>
                       <option value="Medical">Medical</option>
                       <option value="Food">Food</option>
-                      <option value="Physical Labor">Physical Labor</option>
-                      <option value="Teaching">Teaching</option>
+                      <option value="Cleanup">Cleanup</option>
+                      <option value="Education">Education</option>
+                      <option value="Other">Other</option>
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1 flex items-center">
-                      Urgency {aiSuggested && <span className="text-[10px] bg-purple-100 text-purple-700 px-1.5 py-0.5 rounded ml-2 font-bold">AI Suggested</span>}
+                      Urgency {aiSuggested && <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded ml-2 font-bold flex items-center">⚡ AI Suggested</span>}
                     </label>
                     <select className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-primary-500 focus:border-primary-500 outline-none" value={newReq.urgency} onChange={e => {setNewReq({...newReq, urgency: e.target.value}); setAiSuggested(false);}}>
                       <option value="Low">Low</option>
@@ -339,7 +354,6 @@ export default function NGODashboard() {
                     </select>
                   </div>
                 </div>
-                {aiSuggested && <p className="text-right text-xs text-purple-600 font-medium mt-1">Powered by Gemini ✦</p>}
                 <button type="submit" className="w-full mt-4 bg-primary-500 text-white font-bold py-3 rounded-xl hover:bg-primary-600 transition-colors shadow-sm">
                   Create Request
                 </button>

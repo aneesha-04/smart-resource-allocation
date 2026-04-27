@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, PieChart, Pie, Cell } from 'recharts';
-import { summarizeReport } from '../lib/aiHelpers';
+import { streamExecutiveSummary } from '../lib/aiHelpers';
 import { Loader2, Sparkles, TrendingUp, PieChart as PieChartIcon, MapPin, Activity, Clock, CheckCircle, Navigation } from 'lucide-react';
 
 const data = [
@@ -31,10 +31,20 @@ const localityData = [
 
 export default function Insights() {
   const [summary, setSummary] = useState('');
+  const [isStreaming, setIsStreaming] = useState(false);
   const [dateFilter, setDateFilter] = useState('This Week');
   
+  const generateSummary = async () => {
+    setSummary('');
+    setIsStreaming(true);
+    await streamExecutiveSummary((chunkText) => {
+      setSummary(prev => prev + chunkText);
+    });
+    setIsStreaming(false);
+  };
+
   useEffect(() => {
-    summarizeReport(data).then(setSummary);
+    generateSummary();
   }, []);
 
   return (
@@ -61,15 +71,23 @@ export default function Insights() {
         <div className="p-3 bg-white rounded-xl shadow-sm">
           <Sparkles className="w-6 h-6 text-primary-500" />
         </div>
-        <div>
-           <div className="mb-2">
+        <div className="flex-1">
+           <div className="mb-2 flex items-center justify-between">
              <h3 className="text-sm font-bold text-primary-900 uppercase tracking-wider">AI Executive Summary</h3>
+             <button onClick={generateSummary} disabled={isStreaming} className="text-xs font-semibold text-primary-600 hover:text-primary-700 disabled:opacity-50 flex items-center">
+               🔄 Regenerate Summary
+             </button>
            </div>
            {summary ? (
-             <p className="text-slate-700 leading-relaxed font-medium">{summary}</p>
+             <div className="relative">
+               <p className="text-slate-700 leading-relaxed font-medium">
+                 {summary}
+                 {isStreaming && <span className="inline-block w-1.5 h-4 bg-primary-500 ml-1 animate-pulse align-middle" />}
+               </p>
+             </div>
            ) : (
              <div className="flex items-center space-x-2 text-slate-500">
-               <Loader2 className="w-4 h-4 animate-spin" /> <span>Generating insights with Gemini...</span>
+               <Loader2 className="w-4 h-4 animate-spin" /> <span>Gemini is analyzing data...</span>
              </div>
            )}
         </div>
