@@ -1,16 +1,35 @@
-# React + Vite
+# SevaConnect AI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+SevaConnect AI is an AI-powered volunteer coordination platform that helps NGOs and community groups manage requests and allocate volunteers efficiently.
 
-Currently, two official plugins are available:
+## Problem
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Community data is often scattered across surveys, reports, and spreadsheets, making it hard to identify urgent needs and coordinate volunteers quickly.
 
-## React Compiler
+## Solution
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+SevaConnect AI centralizes requests, detects urgency using AI, and matches volunteers based on skills, location, and availability.
 
-## Expanding the ESLint configuration
+## Features
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Centralized request dashboard  
+- AI urgency detection  
+- Smart volunteer matching  
+- Task assignment & tracking  
+- Notifications & alerts  
+- Analytics dashboard  
+
+## Tech Stack
+
+- React.js  
+- Tailwind CSS  
+- Node.js / Express.js  
+- Firebase Firestore & Auth  
+- Google Gemini API  
+- Vercel / Firebase Hosting  
+
+## Run Locally
+
+```bash
+npm install
+npm run dev
